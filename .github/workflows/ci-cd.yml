@@ -101,9 +101,20 @@ jobs:
           [ -n "$HOST" ] || { echo "DEPLOY_HOST is empty"; missing=1; }
           [ -n "$USER" ] || { echo "DEPLOY_USER is empty"; missing=1; }
           [ -n "$KEY" ] || { echo "DEPLOY_SSH_KEY is empty"; missing=1; }
-          if [ -n "$KEY" ] && ! printf '%s\n' "$KEY" | grep -q "BEGIN .*PRIVATE KEY"; then
-            echo "DEPLOY_SSH_KEY is not a private key (missing BEGIN PRIVATE KEY)"
-            missing=1
+          if [ -n "$KEY" ]; then
+            first="$(printf '%s\n' "$KEY" | head -n 1)"
+            if printf '%s\n' "$KEY" | grep -q "BEGIN .*PRIVATE KEY"; then
+              echo "DEPLOY_SSH_KEY looks like a private key"
+            elif printf '%s\n' "$first" | grep -q "^ssh-"; then
+              echo "DEPLOY_SSH_KEY looks like a PUBLIC key (.pub). Use the file without .pub"
+              missing=1
+            elif printf '%s\n' "$KEY" | grep -q "PuTTY-User-Key-File"; then
+              echo "DEPLOY_SSH_KEY looks like a PuTTY .ppk key. Export OpenSSH private key first"
+              missing=1
+            else
+              echo "DEPLOY_SSH_KEY is not an OpenSSH private key (no BEGIN PRIVATE KEY header)"
+              missing=1
+            fi
           fi
           exit "$missing"
 

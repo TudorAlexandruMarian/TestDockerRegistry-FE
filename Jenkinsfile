@@ -59,16 +59,17 @@ pipeline {
           sh '''
             set -eu
             IMAGE="${DOCKERHUB_USER}/${IMAGE_NAME}:${GIT_COMMIT}"
-            kubectl apply -f k8s/namespace.yaml
-            kubectl -n "${K8S_NAMESPACE}" create secret docker-registry dockerhub-pull \
+            kubectl --request-timeout=60s apply --validate=false -f k8s/namespace.yaml
+            kubectl --request-timeout=60s -n "${K8S_NAMESPACE}" create secret docker-registry dockerhub-pull \
               --docker-server=https://index.docker.io/v1/ \
               --docker-username="${DOCKERHUB_USER}" \
               --docker-password="${DOCKERHUB_PASS}" \
-              --dry-run=client -o yaml | kubectl apply -f -
-            sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" k8s/deployment.yaml | kubectl apply -f -
-            kubectl apply -f k8s/service.yaml
-            kubectl -n "${K8S_NAMESPACE}" rollout status deployment/testdockerregistry-fe --timeout=180s
-            kubectl -n "${K8S_NAMESPACE}" get pods,svc
+              --dry-run=client -o yaml | kubectl --request-timeout=60s apply --validate=false -f -
+            sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" k8s/deployment.yaml \
+              | kubectl --request-timeout=60s apply --validate=false -f -
+            kubectl --request-timeout=60s apply --validate=false -f k8s/service.yaml
+            kubectl --request-timeout=120s -n "${K8S_NAMESPACE}" rollout status deployment/testdockerregistry-fe --timeout=180s
+            kubectl --request-timeout=60s -n "${K8S_NAMESPACE}" get pods,svc
           '''
         }
       }

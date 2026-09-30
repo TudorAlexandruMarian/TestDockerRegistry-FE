@@ -1,0 +1,8 @@
+git
+github
+docker-workflow
+kubernetes-cli
+credentials-binding
+workflow-aggregator
+timestamper
+configuration-as-code

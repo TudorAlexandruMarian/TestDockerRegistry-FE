@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: testdockerregistry-fe
+  namespace: testdockerregistry-fe
+  labels:
+    app: testdockerregistry-fe
+    app.kubernetes.io/name: testdockerregistry-fe
+spec:
+  # LoadBalancer: k3s ServiceLB binds port 80 on the node when available.
+  # nodePort 30080 always exposes the app even if ServiceLB cannot bind :80.
+  type: LoadBalancer
+  selector:
+    app: testdockerregistry-fe
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30080

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testdockerregistry-fe
+  namespace: testdockerregistry-fe
+  labels:
+    app: testdockerregistry-fe
+    app.kubernetes.io/name: testdockerregistry-fe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testdockerregistry-fe
+  template:
+    metadata:
+      labels:
+        app: testdockerregistry-fe
+        app.kubernetes.io/name: testdockerregistry-fe
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-pull
+      containers:
+        - name: fe
+          image: IMAGE_PLACEHOLDER
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
